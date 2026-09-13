@@ -25,12 +25,14 @@ namespace HeadphoneSwitcher
     {
         public Profile[] Profiles = new Profile[2];
         public bool PlaySounds = true;
+        public bool PlaySoundsOnBothDevices = true;
         // Repairs retain this revision; only explicit user edits advance it.
         public string UserRevision;
         public Dictionary<string, string> Extra = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         public SwitcherConfig Copy()
         {
             return new SwitcherConfig { Profiles = new[] { Profiles[0].Copy(), Profiles[1].Copy() }, PlaySounds = PlaySounds,
+                PlaySoundsOnBothDevices = PlaySoundsOnBothDevices,
                 UserRevision = UserRevision, Extra = new Dictionary<string, string>(Extra, StringComparer.OrdinalIgnoreCase) };
         }
         public static SwitcherConfig Load(string path)
@@ -50,6 +52,10 @@ namespace HeadphoneSwitcher
             if (values.ContainsKey("play_sound_cues") && !bool.TryParse(values["play_sound_cues"], out sounds))
                 throw new InvalidOperationException("The sound setting is invalid. Open setup to repair the configuration.");
             config.PlaySounds = !values.ContainsKey("play_sound_cues") || bool.Parse(values["play_sound_cues"]);
+            bool bothDevices;
+            if (values.ContainsKey("play_sounds_both_devices") && !bool.TryParse(values["play_sounds_both_devices"], out bothDevices))
+                throw new InvalidOperationException("The sound setting is invalid. Open setup to repair the configuration.");
+            config.PlaySoundsOnBothDevices = !values.ContainsKey("play_sounds_both_devices") || bool.Parse(values["play_sounds_both_devices"]);
             for (int i = 0; i < 2; i++)
             {
                 string prefix = "profile_" + (i + 1) + "_";
@@ -64,6 +70,7 @@ namespace HeadphoneSwitcher
             var values = new Dictionary<string, string>(Extra, StringComparer.OrdinalIgnoreCase);
             values["user_revision"] = UserRevision ?? Guid.NewGuid().ToString("N");
             values["play_sound_cues"] = PlaySounds ? "true" : "false";
+            values["play_sounds_both_devices"] = PlaySoundsOnBothDevices ? "true" : "false";
             for (int i = 0; i < 2; i++)
             {
                 string prefix = "profile_" + (i + 1) + "_";

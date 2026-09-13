@@ -44,9 +44,9 @@ AudioSwitcher uses its own short, soft struck-note sounds. They have a rounded g
 - **Profile 2:** two closely spaced dings: the second starts 180 ms after the first and is two semitones higher.
 - **Error:** a lower, muted note in the same sound family.
 
-Leading and trailing near-silence is removed before playback, so the source file does not add a pause. The two profile-2 notes overlap naturally as the first fades. Tiny fades soften the joins without inserting silence. The clips are attenuated and capped at 16% of full scale per note (20% for the overlapping pair); the app never changes your Windows output volume.
+Leading and trailing near-silence is removed before playback, so the source file does not add a pause. The two profile-2 notes overlap naturally as the first fades. Tiny fades soften the joins without inserting silence. The clips are attenuated and capped at 16% of full scale per note (20% for the overlapping pair); the error cue is capped louder, at 32%, so it stands out. The app never changes your Windows output volume.
 
-Success cues address the selected output by its exact endpoint ID, with a short readiness retry. Error cues and previews use the current default output. Sound failures never undo a successful switch. If there is no usable output, the sound failure is logged.
+Success cues address the selected output by its exact endpoint ID, with a short readiness retry, plus a short silence lead-in so a device that is still waking up drops silence rather than the start of the note. **Play on both the previous and new device** (on by default) also plays the success cue on the device you're switching away from, in case the new device hasn't finished waking up in time; turn it off in setup to only play on the new device. Error cues and previews use the current default output. Sound failures never undo a successful switch. If there is no usable output, the sound failure is logged.
 
 The original WAV clips are embedded in both executables. There are no external sound files to install. `assets/make-sounds.py` reproduces them using Python's standard library and is not required for an ordinary build.
 

@@ -9,6 +9,13 @@ namespace HeadphoneSwitcher
 {
     internal static class SoundCues
     {
+        public static bool TryPlayOnBoth(int cue, string primaryEndpointId, string secondaryEndpointId, Action<string> log)
+        {
+            bool played = TryPlay(cue, primaryEndpointId, log);
+            if (!string.Equals(primaryEndpointId, secondaryEndpointId, StringComparison.OrdinalIgnoreCase))
+                played |= TryPlay(cue, secondaryEndpointId, log);
+            return played;
+        }
         public static bool TryPlay(int cue, string endpointId, Action<string> log)
         {
             try
@@ -57,7 +64,7 @@ namespace HeadphoneSwitcher
                     }
                     if (samples == null || format.Tag != 1 || format.Bits != 16 || format.BlockAlign == 0)
                         throw new InvalidDataException("Sounds must use 16-bit PCM WAV.");
-                    samples = PrepareClip(samples, format);
+                    samples = PrepareClip(samples, format, cue == 0 ? 0.32 : 0.16);
                     if (cue != 2) return samples;
                     return RisingPair(samples, format);
                 }
@@ -96,7 +103,7 @@ namespace HeadphoneSwitcher
             }
             return pair;
         }
-        internal static byte[] PrepareClip(byte[] samples, WaveFormat format)
+        internal static byte[] PrepareClip(byte[] samples, WaveFormat format, double targetLevel = 0.16)
         {
             if (format.Channels < 1 || format.BlockAlign != format.Channels * 2 || samples.Length % format.BlockAlign != 0 || format.Rate == 0)
                 throw new InvalidDataException("Invalid PCM sound layout.");
@@ -113,7 +120,7 @@ namespace HeadphoneSwitcher
             int keptFrames = last - first + 1;
             byte[] result = new byte[keptFrames * format.BlockAlign];
             // Attenuate only; never increase the recording's level or change the output volume.
-            double gain = Math.Min(0.65, (0.16 * short.MaxValue) / peak);
+            double gain = Math.Min(0.65, (targetLevel * short.MaxValue) / peak);
             int fadeFrames = Math.Max(1, (int)(format.Rate * 0.003));
             for (int frame = 0; frame < keptFrames; frame++)
             {

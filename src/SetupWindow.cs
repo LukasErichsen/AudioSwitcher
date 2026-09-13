@@ -51,16 +51,14 @@ namespace HeadphoneSwitcher
                 Get<Button>("Apply" + (i + 1)).Click += async (s, e) => await Apply(index);
                 Get<Button>("Preview" + (i + 1)).Click += async (s, e) => await Preview(index + 1);
             }
-            Get<Button>("Refresh").Content = "Refresh devices";
-            Get<Button>("Refresh").Click += (s, e) => RefreshDevices(true);
             Get<Button>("PreviewError").Click += async (s, e) => await Preview(0);
             Get<Button>("Cancel").Click += (s, e) => Close();
             Get<Button>("Save").Click += async (s, e) => await Save();
             Get<Button>("OpenSoundPanel").Click += (s, e) => OpenSoundControlPanel();
             Closing += (s, e) => { if (busy) { e.Cancel = true; Notice("Finishing the current operation. Please wait.", false); } };
             Closed += (s, e) => defaultsTimer.Stop();
-            defaultsTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
-            defaultsTimer.Tick += (s, e) => CurrentDefaults();
+            defaultsTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
+            defaultsTimer.Tick += (s, e) => { if (!busy) RefreshDevices(false); };
             defaultsTimer.Start();
             SourceInitialized += (s, e) =>
             {
@@ -110,6 +108,7 @@ namespace HeadphoneSwitcher
                 }
             }
             Get<CheckBox>("Sounds").IsChecked = baseline == null || baseline.PlaySounds;
+            Get<CheckBox>("BothDevices").IsChecked = baseline == null || baseline.PlaySoundsOnBothDevices;
             loading = false;
             RefreshDevices(false);
             if (problem != null) Notice(problem, true);
@@ -137,7 +136,7 @@ namespace HeadphoneSwitcher
             // A new profile needs an explicit choice; never guess which device the user intended.
             else box.SelectedIndex = -1;
         }
-        private void RefreshDevices(bool announce)
+        internal void RefreshDevices(bool announce)
         {
             try
             {
@@ -196,6 +195,9 @@ namespace HeadphoneSwitcher
             catch (Exception ex) { Notice(ex.Message, true); }
             if (profile == null) { if (Get<CheckBox>("Sounds").IsChecked == true) await Preview(0); return; }
             bool sounds = Get<CheckBox>("Sounds").IsChecked == true;
+            bool bothDevices = Get<CheckBox>("BothDevices").IsChecked == true;
+            var otherOutput = playback[1 - index].SelectedItem as MMDevice;
+            string otherPlaybackId = !bothDevices || otherOutput == null ? profile.Playback.Id : otherOutput.Id;
             SetBusy(true); Notice("Applying " + profile.Name + "...", false);
             try
             {
@@ -210,7 +212,7 @@ namespace HeadphoneSwitcher
                             var temporary = new SwitcherConfig { Profiles = new[] { profile, profile.Copy() } };
                             engine.Heal(temporary);
                             engine.Apply(profile);
-                            bool played = !sounds || SoundCues.TryPlay(index + 1, profile.Playback.Id, Log);
+                            bool played = !sounds || SoundCues.TryPlayOnBoth(index + 1, profile.Playback.Id, otherPlaybackId, Log);
                             return "Applied " + profile.Name + "." + (played ? "" : " The sound could not play.");
                         }
                         catch { if (sounds) SoundCues.TryPlay(0, null, Log); throw; }
@@ -241,7 +243,8 @@ namespace HeadphoneSwitcher
             SwitcherConfig edited;
             try
             {
-                edited = new SwitcherConfig { Profiles = new[] { ReadProfile(0), ReadProfile(1) }, PlaySounds = Get<CheckBox>("Sounds").IsChecked == true };
+                edited = new SwitcherConfig { Profiles = new[] { ReadProfile(0), ReadProfile(1) }, PlaySounds = Get<CheckBox>("Sounds").IsChecked == true,
+                    PlaySoundsOnBothDevices = Get<CheckBox>("BothDevices").IsChecked == true };
                 if (string.Equals(edited.Profiles[0].Playback.Id, edited.Profiles[1].Playback.Id, StringComparison.OrdinalIgnoreCase) &&
                     string.Equals(edited.Profiles[0].Recording.Id, edited.Profiles[1].Recording.Id, StringComparison.OrdinalIgnoreCase))
                 { Notice("Both profiles use the same pair. Choose a different playback device or microphone so toggling has an effect.", true); return; }

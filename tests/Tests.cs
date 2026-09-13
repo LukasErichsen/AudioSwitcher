@@ -224,7 +224,7 @@ namespace HeadphoneSwitcher
                 Test("setup refresh preserves names, sound setting and selected devices", () => {
                     string path = PathFor("ui.config"); Config().Save(path); var a = new FakeAudio(); var window = new SetupWindow(a, path, PathFor("ui.log"));
                     var view = window.View; ((TextBox)view.FindName("Name1")).Text = "Unsaved custom name"; ((CheckBox)view.FindName("Sounds")).IsChecked = false;
-                    a.Devices[0].RemoveAt(0); ((Button)view.FindName("Refresh")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                    a.Devices[0].RemoveAt(0); window.RefreshDevices(true);
                     Check(((TextBox)view.FindName("Name1")).Text == "Unsaved custom name" && ((CheckBox)view.FindName("Sounds")).IsChecked == false, "Edits preserved");
                     Check(!((MMDevice)((ComboBox)view.FindName("Playback1")).SelectedItem).Available, "Saved device retained");
                     Render(view, 940, 888, "setup-disconnected.png"); window.Close();

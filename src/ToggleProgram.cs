@@ -36,7 +36,11 @@ namespace HeadphoneSwitcher
                         int target = engine.Target(config);
                         engine.Apply(config.Profiles[target]);
                         Log("Switched to " + config.Profiles[target].Name + ".");
-                        if (sounds) SoundCues.TryPlay(target + 1, config.Profiles[target].Playback.Id, Log);
+                        if (sounds)
+                        {
+                            string secondary = config.PlaySoundsOnBothDevices ? config.Profiles[1 - target].Playback.Id : config.Profiles[target].Playback.Id;
+                            SoundCues.TryPlayOnBoth(target + 1, config.Profiles[target].Playback.Id, secondary, Log);
+                        }
                         return 0;
                     }
                     catch (Exception ex)
