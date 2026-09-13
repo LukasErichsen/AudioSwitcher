@@ -1,8 +1,8 @@
 name: Release
 
 on:
-  release:
-    types: [published]
+  push:
+    branches: [main]
 
 permissions:
   contents: write
@@ -18,7 +18,10 @@ jobs:
         shell: pwsh
         run: .\build.ps1 -Test -Package
 
-      - name: Attach build to release
+      - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ github.run_number }}
+          name: v${{ github.run_number }}
+          generate_release_notes: true
           files: AudioSwitcher.zip
