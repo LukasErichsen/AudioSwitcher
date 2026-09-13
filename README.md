@@ -68,6 +68,8 @@ Log maintenance runs at most once per UTC day. It retains the past 365 days at c
 
 Requires 64-bit Windows with .NET Framework 4.8 or newer and its framework compiler. Intended and visually styled for Windows 11. No NuGet packages or SDK downloads are required.
 
+Commits to `main` should use [Conventional Commits](https://www.conventionalcommits.org) (`feat: ...`, `fix: ...`, etc.) — `release-please` reads them to open a release PR with the next version and changelog. Merging that PR publishes the GitHub Release, which triggers the build to attach `AudioSwitcher.zip`.
+
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -Test
