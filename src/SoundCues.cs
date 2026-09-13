@@ -137,6 +137,9 @@ namespace HeadphoneSwitcher
         {
             WaveFormat format;
             byte[] samples = Samples(cue, out format);
+            // A device that just became default (or is waking from USB/Bluetooth idle) can drop the
+            // start of the very first buffer it receives. Give it silence to drop instead of the note.
+            samples = PrependSilence(samples, format, 0.35);
             uint device = endpointId == null ? uint.MaxValue : FindOutput(endpointId);
             IntPtr output;
             Check(waveOutOpen(out output, device, ref format, IntPtr.Zero, IntPtr.Zero, 0));
@@ -167,6 +170,13 @@ namespace HeadphoneSwitcher
                 if (header != IntPtr.Zero) Marshal.FreeHGlobal(header);
                 if (data != IntPtr.Zero) Marshal.FreeHGlobal(data);
             }
+        }
+        internal static byte[] PrependSilence(byte[] samples, WaveFormat format, double seconds)
+        {
+            int silenceFrames = (int)(format.Rate * seconds);
+            byte[] result = new byte[silenceFrames * format.BlockAlign + samples.Length];
+            Array.Copy(samples, 0, result, silenceFrames * format.BlockAlign, samples.Length);
+            return result;
         }
         internal static uint FindOutput(string endpointId)
         {

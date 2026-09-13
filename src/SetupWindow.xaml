@@ -56,9 +56,10 @@
         <StackPanel Grid.Column="1" Margin="16,0,0,0"><TextBlock Text="AudioSwitcher" FontSize="28" FontWeight="SemiBold"/><TextBlock Text="Two setups. One quick switch." Foreground="#606060" Margin="0,4,0,0"/></StackPanel>
       </Grid>
       <Border Style="{StaticResource Card}" Padding="20,16" Margin="0,0,0,16">
-        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
           <StackPanel><TextBlock Text="CURRENT WINDOWS DEFAULTS" FontSize="10" FontWeight="SemiBold" Foreground="#606060" Margin="0,0,0,8"/><TextBlock x:Name="CurrentPlayback" Text="Playback: loading..."/><TextBlock x:Name="CurrentRecording" Text="Microphone: loading..." Foreground="#606060" Margin="0,5,0,0"/></StackPanel>
-          <Button x:Name="Refresh" Grid.Column="1" Content="&#xE72C;  Refresh" FontFamily="Segoe UI" Margin="20,0,0,0" VerticalAlignment="Center" AutomationProperties.Name="Refresh connected audio devices"/>
+          <Button x:Name="OpenSoundPanel" Grid.Column="1" Content="Sound panel" FontFamily="Segoe UI" Margin="20,0,0,0" VerticalAlignment="Center" AutomationProperties.Name="Open the classic Windows Sound control panel"/>
+          <Button x:Name="Refresh" Grid.Column="2" Content="&#xE72C;  Refresh" FontFamily="Segoe UI" Margin="10,0,0,0" VerticalAlignment="Center" AutomationProperties.Name="Refresh connected audio devices"/>
         </Grid>
       </Border>
       <TextBlock Text="Your audio profiles" FontSize="19" FontWeight="SemiBold"/>

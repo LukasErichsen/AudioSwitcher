@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -12,6 +13,7 @@ using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Markup;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace HeadphoneSwitcher
 {
@@ -25,6 +27,7 @@ namespace HeadphoneSwitcher
         private readonly ComboBox[] playback = new ComboBox[2], recording = new ComboBox[2];
         private bool loading, busy;
         private string invalidConfigFingerprint;
+        private readonly DispatcherTimer defaultsTimer;
         internal Grid View { get { return root; } }
 
         public SetupWindow(IAudioBackend audio, string configPath, string logPath)
@@ -53,7 +56,12 @@ namespace HeadphoneSwitcher
             Get<Button>("PreviewError").Click += async (s, e) => await Preview(0);
             Get<Button>("Cancel").Click += (s, e) => Close();
             Get<Button>("Save").Click += async (s, e) => await Save();
+            Get<Button>("OpenSoundPanel").Click += (s, e) => OpenSoundControlPanel();
             Closing += (s, e) => { if (busy) { e.Cancel = true; Notice("Finishing the current operation. Please wait.", false); } };
+            Closed += (s, e) => defaultsTimer.Stop();
+            defaultsTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            defaultsTimer.Tick += (s, e) => CurrentDefaults();
+            defaultsTimer.Start();
             SourceInitialized += (s, e) =>
             {
                 try { int corners = 2; DwmSetWindowAttribute(new WindowInteropHelper(this).Handle, 33, ref corners, 4); }
@@ -155,6 +163,11 @@ namespace HeadphoneSwitcher
                 playback[i].ToolTip = output == null ? "Choose a playback device" : output.Name + "\n" + output.Id;
                 recording[i].ToolTip = input == null ? "Choose a microphone" : input.Name + "\n" + input.Id;
             }
+        }
+        private void OpenSoundControlPanel()
+        {
+            try { Process.Start(new ProcessStartInfo("control.exe", "mmsys.cpl") { UseShellExecute = true }); }
+            catch (Exception ex) { Notice("Could not open the Sound control panel. " + ex.Message, true); Logger.Write(logPath, "Opening Sound control panel failed.", ex); }
         }
         private void CurrentDefaults()
         {
