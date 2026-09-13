@@ -1,0 +1,24 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build, test, and package
+        shell: pwsh
+        run: .\build.ps1 -Test -Package
+
+      - name: Attach build to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: AudioSwitcher.zip

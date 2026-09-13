@@ -2,6 +2,8 @@
 
 A small Windows utility that switches between two fixed playback + microphone pairs. Both normal audio and calls follow the selected pair.
 
+**[Download the latest release](../../releases/latest)** — no source, build tools, or .NET Framework compiler required.
+
 - **AudioSwitcher.Config.exe** — configure profiles, apply a pair, and preview sounds.
 - **AudioSwitcher.Toggle.exe** — switch once, optionally play confirmation, and exit without a window or focus changes.
 
