@@ -1,0 +1,24 @@
+# Generated builds and packaging
+/AudioSwitcher.Config.exe
+/AudioSwitcher.Toggle.exe
+/AudioSwitcher.zip
+/artifacts/
+/log/
+
+# Temporary and backup files
+*.tmp
+*.bak
+last-trigger
+*.log
+
+# IDE and Editor files
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# OS generated files
+Thumbs.db
+[Dd]esktop.ini
+
